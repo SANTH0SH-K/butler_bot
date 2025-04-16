@@ -1,0 +1,264 @@
+<?xml version="1.0" ?>
+<robot name="butler_bot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="$(find butler_bot)/urdf/materials.xacro" />
+<xacro:include filename="$(find butler_bot)/urdf/butler_bot.trans" />
+<xacro:include filename="$(find butler_bot)/urdf/butler_bot.gazebo" />
+<xacro:include filename="$(find butler_bot)/urdf/gazebo_control.xacro" />
+
+<link name="base_footprint"/>
+
+<link name="base_link">
+  <inertial>
+    <origin xyz="0 0 0.2" rpy="0 0 0"/>
+    <mass value="50.0"/>
+    <inertia ixx="10.0" iyy="10.0" izz="10.0" ixy="0.0" iyz="0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="black_trans"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0.4" rpy="0 0 0"/>
+    <geometry>
+      <box size="0.4 0.4 0.8"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="right_wheel_1">
+  <inertial>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <mass value="2.0"/>
+    <inertia ixx="0.02" iyy="0.04" izz="0.02" ixy="0.0" iyz="0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.0 0.16 -0.05" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/right_wheel_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="white"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+    <geometry>
+      <cylinder length="0.04" radius="0.05"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="left_wheel_1">
+  <inertial>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <mass value="2.0"/>
+    <inertia ixx="0.02" iyy="0.04" izz="0.02" ixy="0.0" iyz="0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.0 -0.16 -0.05" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/left_wheel_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="white"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+    <geometry>
+      <cylinder length="0.04" radius="0.05"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="imu_1">
+  <inertial>
+    <origin xyz="-1.3043412765197046e-18 -1.3043412765197046e-18 0.007500000000000007" rpy="0 0 0"/>
+    <mass value="0.026726903150874313"/>
+    <inertia ixx="1e-06" iyy="1e-06" izz="1e-06" ixy="0.0" iyz="-0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.0 -0.0 -0.182" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/imu_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="black"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.0 -0.0 -0.182" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/imu_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="camera_1">
+  <inertial>
+    <origin xyz="0.004972760168931917 5.016782464053831e-07 -0.0005223907713478582" rpy="0 0 0"/>
+    <mass value="0.03853359739168721"/>
+    <inertia ixx="3e-06" iyy="2e-06" izz="2e-06" ixy="0.0" iyz="-0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.227311 0.000231 -1.011235" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/camera_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="black"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.227311 0.000231 -1.011235" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/camera_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="slide_i_1">
+  <inertial>
+    <origin xyz="0.10265120192030891 -0.087227862918116 0.08245393500730491" rpy="0 0 0"/>
+    <mass value="6.671856825002257"/>
+    <inertia ixx="0.119339" iyy="0.085406" izz="0.175325" ixy="-0.057161" iyz="0.000637" ixz="-0.000755"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.0 -0.0 -0.827295" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/slide_i_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="black_slide"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.0 -0.0 -0.827295" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/slide_i_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="slide_ii_1">
+  <inertial>
+    <origin xyz="0.09332131347575981 -0.07935430290975601 0.08256335747283794" rpy="0 0 0"/>
+    <mass value="6.066164454956698"/>
+    <inertia ixx="0.092054" iyy="0.06654" izz="0.131847" ixy="-0.042976" iyz="0.000579" ixz="-0.000687"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.0 -0.0 -0.645449" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/slide_ii_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="black_slide"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.0 -0.0 -0.645449" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/slide_ii_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="slide_iii_1">
+  <inertial>
+    <origin xyz="0.08399290864411624 -0.07148207698021895 0.08269817543479258" rpy="0 0 0"/>
+    <mass value="5.4604720849111885"/>
+    <inertia ixx="0.069462" iyy="0.050843" izz="0.096232" ixy="-0.031357" iyz="0.000521" ixz="-0.000618"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.0 -0.0 -0.463602" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/slide_iii_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="black_slide"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.0 -0.0 -0.463602" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/slide_iii_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="lidar_1">
+  <inertial>
+    <origin xyz="-1.1847664506403621e-07 -7.555046224993353e-14 0.03341614407962537" rpy="0 0 0"/>
+    <mass value="1.7392760875032494"/>
+    <inertia ixx="0.001103" iyy="0.001103" izz="0.000906" ixy="-0.0" iyz="0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.081264 0.0 -0.205" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/lidar_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="black"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.081264 0.0 -0.205" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find butler_bot)/meshes/lidar_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<joint name="base_joint" type="fixed">
+  <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+  <parent link="base_footprint"/>
+  <child link="base_link"/>
+</joint>
+
+<joint name="right_wheel_joint" type="continuous">
+  <origin xyz="0.0 -0.16 0.05" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="right_wheel_1"/>
+  <axis xyz="0.0 1.0 0.0"/>
+</joint>
+
+<joint name="left_wheel_joint" type="continuous">
+  <origin xyz="0.0 0.16 0.05" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="left_wheel_1"/>
+  <axis xyz="0.0 1.0 0.0"/>
+</joint>
+
+<joint name="imu_joint" type="fixed">
+  <origin xyz="0.0 0.0 0.182" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="imu_1"/>
+</joint>
+
+<joint name="camera_joint" type="fixed">
+  <origin xyz="0.227311 -0.000231 1.011235" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="camera_1"/>
+</joint>
+
+<joint name="slide_i_joint" type="revolute">
+  <origin xyz="0.0 0.0 0.827295" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="slide_i_1"/>
+  <axis xyz="0.0 0.0 -1.0"/>
+  <limit upper="1.919862" lower="0.0" effort="100" velocity="100"/>
+</joint>
+
+<joint name="slide_ii_joint" type="revolute">
+  <origin xyz="0.0 0.0 0.645449" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="slide_ii_1"/>
+  <axis xyz="0.0 0.0 -1.0"/>
+  <limit upper="1.919862" lower="0.0" effort="100" velocity="100"/>
+</joint>
+
+<joint name="slide_iii_joint" type="revolute">
+  <origin xyz="0.0 0.0 0.463602" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="slide_iii_1"/>
+  <axis xyz="0.0 0.0 -1.0"/>
+  <limit upper="1.919862" lower="0.0" effort="100" velocity="100"/>
+</joint>
+
+<joint name="lidar_joint" type="fixed">
+  <origin xyz="0.081264 0.0 0.205" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="lidar_1"/>
+</joint>
+
+
+
+</robot>

@@ -1,0 +1,80 @@
+<?xml version="1.0" ?>
+<robot name="butler_bot" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+<xacro:property name="body_color" value="Gazebo/Silver" />
+
+<gazebo reference="base_link">
+  <material>${body_color}</material>
+  <mu1>0.0001</mu1>
+  <mu2>0.0001</mu2>
+  <self_collide>true</self_collide>
+  <gravity>true</gravity>
+</gazebo>
+
+<gazebo reference="right_wheel_1">
+  <material>${body_color}</material>
+  <mu1>10.0</mu1>
+  <mu2>10.0</mu2>
+  <self_collide>true</self_collide>
+  <kp>1000000.0</kp>
+  <kd>10.0</kd>
+  <minDepth>0.001</minDepth>
+  <maxVel>0.1</maxVel>
+  <fdir1>1 0 0</fdir1>
+</gazebo>
+
+<gazebo reference="left_wheel_1">
+  <material>${body_color}</material>
+  <mu1>10.0</mu1>
+  <mu2>10.0</mu2>
+  <self_collide>true</self_collide>
+  <kp>1000000.0</kp>
+  <kd>10.0</kd>
+  <minDepth>0.001</minDepth>
+  <maxVel>0.1</maxVel>
+  <fdir1>1 0 0</fdir1>
+</gazebo>
+
+<gazebo reference="imu_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="camera_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="slide_i_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="slide_ii_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="slide_iii_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+<gazebo reference="lidar_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <self_collide>true</self_collide>
+</gazebo>
+
+</robot>

@@ -20,6 +20,7 @@ install(PROGRAMS
   scripts/task_4.py
   scripts/task_5.py
   scripts/task_6.py
+  scripts/task_7.py
   DESTINATION lib/${PROJECT_NAME}
 )
 ament_package()

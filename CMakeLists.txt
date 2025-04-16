@@ -9,7 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
-install(DIRECTORY  models urdf worlds  meshes test   
+install(DIRECTORY  launch models urdf worlds config meshes test  
     DESTINATION share/${PROJECT_NAME}/
 )
 

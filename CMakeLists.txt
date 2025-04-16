@@ -15,6 +15,7 @@ install(DIRECTORY  launch models urdf worlds config meshes test params maps scri
 
 install(PROGRAMS
   scripts/task_1.py
+  scripts/task_2.py
   
   DESTINATION lib/${PROJECT_NAME}
 )

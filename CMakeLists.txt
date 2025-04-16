@@ -9,8 +9,13 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
-install(DIRECTORY  launch models urdf worlds config meshes test params maps  
+install(DIRECTORY  launch models urdf worlds config meshes test params maps scripts  
     DESTINATION share/${PROJECT_NAME}/
 )
 
+install(PROGRAMS
+  scripts/task_1.py
+  
+  DESTINATION lib/${PROJECT_NAME}
+)
 ament_package()

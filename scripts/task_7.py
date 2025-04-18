@@ -74,11 +74,12 @@ class ButlerRobot(Node):
         self.awaiting_confirmation = False
         self.confirmation_received = False
         self.current_location = 'home'
-        self.timeout_duration = 30.0  # 30 seconds timeout
+        self.timeout_duration = 30.0 
         self.canceled_tables = []
         self.navigating = False
         self.cancellation_in_progress = False
         self.delivery_in_progress = False
+        self.current_destination = None
         
         self.get_logger().info("Butler Robot initialized and ready to receive orders")
         self.publish_status("Robot ready at home position")
@@ -120,6 +121,8 @@ class ButlerRobot(Node):
         self.publish_status(f"Moving to {location}")
         
         self.navigating = True
+        self.current_destination = location
+        self.cancellation_in_progress = False
         
         self.nav.goToPose(self.poses[location])
         while not self.nav.isTaskComplete():
@@ -131,11 +134,14 @@ class ButlerRobot(Node):
                 time.sleep(0.5)
                 
                 self.navigating = False
+                self.current_destination = None
+                self.cancellation_in_progress = False
                 return "CANCELED"
                 
             time.sleep(0.2)
         
         self.current_location = location
+        self.current_destination = None
         
         result = self.nav.getResult()
         self.get_logger().info(f"Navigation to {location} completed with result: {result}")
@@ -153,6 +159,10 @@ class ButlerRobot(Node):
         
         start_time = time.time()
         while time.time() - start_time < timeout and not self.confirmation_received:
+            if self.cancellation_in_progress:
+                self.awaiting_confirmation = False
+                self.get_logger().info(f"Confirmation wait canceled at {self.current_location}")
+                return False
             time.sleep(0.1)
             
         result = self.confirmation_received
@@ -176,15 +186,21 @@ class ButlerRobot(Node):
             self.get_logger().info("Confirmation received but not currently awaiting confirmation")
     
     def cancel_callback(self, msg):
-        canceled_table = msg.data.strip().lower()
-        self.get_logger().info(f"Cancellation received for {canceled_table}")
+        cancel_data = msg.data.strip().lower()
+        self.get_logger().info(f"Cancellation received for {cancel_data}")
         
-        if canceled_table.startswith("table"):
-            self.canceled_tables.append(canceled_table)
-            self.publish_status(f"Order canceled for {canceled_table}")
-        elif self.navigating:
-            self.cancellation_in_progress = True
-            self.publish_status("Order cancellation in progress!")
+        if cancel_data.startswith("table"):
+            self.canceled_tables.append(cancel_data)
+            self.publish_status(f"Order canceled for {cancel_data}")
+            
+            if self.navigating and self.current_destination == cancel_data:
+                self.cancellation_in_progress = True
+                self.publish_status(f"Canceling navigation to {cancel_data}")
+                
+        elif cancel_data == "cancel" or cancel_data == "all":
+            if self.navigating or self.awaiting_confirmation:
+                self.cancellation_in_progress = True
+                self.publish_status("Order cancellation in progress!")
     
     def order_callback(self, msg):
         order_data = msg.data.strip().lower()
@@ -214,66 +230,102 @@ class ButlerRobot(Node):
         self.publish_status(f"Order received for tables: {', '.join(tables)}")
         
         self.canceled_tables = []
+        self.cancellation_in_progress = False
         delivery_thread = threading.Thread(target=self.deliver_with_confirmation, args=(tables,))
         delivery_thread.daemon = True
         self.delivery_in_progress = True
         delivery_thread.start()
     
     def deliver_with_confirmation(self, tables):
-        
         try:
             table_list = ", ".join(tables)
             self.publish_status(f"Starting delivery to tables: {table_list}")
             
+            self.cancellation_in_progress = False
+            
+            # First navigate to kitchen
             kitchen_result = self.navigate_to('kitchen')
-            if kitchen_result == "CANCELED" or "SUCCEEDED" not in str(kitchen_result).upper():
+            if kitchen_result == "CANCELED":
+                self.get_logger().error("Kitchen navigation canceled. Returning home.")
+                
+                self.cancellation_in_progress = False
+                self.navigate_to('home')
+                self.publish_status("Delivery canceled. Returned to home.")
+                return
+            elif "SUCCEEDED" not in str(kitchen_result).upper():
                 self.get_logger().error("Failed to reach kitchen. Returning home.")
                 self.navigate_to('home')
                 self.publish_status("Delivery failed. Returned to home.")
                 return
             
+            # Wait for kitchen confirmation
             if not self.wait_for_confirmation():
-                self.get_logger().error("No confirmation received at kitchen. Returning home.")
-                self.navigate_to('home')
-                self.publish_status("No confirmation at kitchen. Returned to home.")
-                return
+                if self.cancellation_in_progress:
+                    self.get_logger().info("Kitchen confirmation wait canceled. Returning home.")
+                    self.cancellation_in_progress = False
+                    self.navigate_to('home')
+                    self.publish_status("Delivery canceled. Returned to home.")
+                    return
+                else:
+                    self.get_logger().error("No confirmation received at kitchen. Returning home.")
+                    self.navigate_to('home')
+                    self.publish_status("No confirmation at kitchen. Returned to home.")
+                    return
             
             self.publish_status(f"Food collected from kitchen for tables: {table_list}")
             
             delivered_tables = []
+            should_return_to_kitchen = True
             
+            # Visit each table in order
             for table in tables:
+                # Skip if table was canceled
                 if table in self.canceled_tables:
                     self.get_logger().info(f"Skipping {table} as order was canceled")
                     self.publish_status(f"Skipping {table} - order canceled")
                     continue
-                    
+                
+                self.cancellation_in_progress = False
+                
+                # Navigate to table
                 table_result = self.navigate_to(table)
                 if table_result == "CANCELED":
                     self.get_logger().warning(f"Navigation to {table} was canceled")
+                    if self.cancellation_in_progress:
+                        should_return_to_kitchen = False
+                        break
                     continue
-                    
+                
                 if "SUCCEEDED" not in str(table_result).upper():
                     self.get_logger().error(f"Failed to reach {table}. Continuing with next table.")
                     continue
                 
+                # Wait for table confirmation
                 if not self.wait_for_confirmation():
-                    self.get_logger().warning(f"No confirmation received at {table}. Skipping.")
-                    self.publish_status(f"No confirmation at {table}. Moving to next table.")
-                    continue
+                    if self.cancellation_in_progress:
+                        self.get_logger().info(f"Confirmation wait at {table} canceled.")
+                        should_return_to_kitchen = False
+                        break
+                    else:
+                        self.get_logger().warning(f"No confirmation received at {table}. Skipping.")
+                        self.publish_status(f"No confirmation at {table}. Moving to next table.")
+                        continue
                 
                 delivered_tables.append(table)
                 self.publish_status(f"Food delivered to {table}")
             
-            kitchen_result = self.navigate_to('kitchen')
-            if kitchen_result == "CANCELED" or "SUCCEEDED" not in str(kitchen_result).upper():
-                self.get_logger().error("Failed to return to kitchen. Going home.")
-                self.navigate_to('home')
-                self.publish_status("Failed to return to kitchen. Returned home.")
-                return
-                
-            self.publish_status("Delivery completed. Returned to kitchen.")
+            if should_return_to_kitchen and not self.cancellation_in_progress:
+                self.cancellation_in_progress = False  
+                kitchen_result = self.navigate_to('kitchen')
+                if kitchen_result == "CANCELED":
+                    self.get_logger().error("Return to kitchen canceled. Going home.")
+                    self.cancellation_in_progress = False  
+                elif "SUCCEEDED" not in str(kitchen_result).upper():
+                    self.get_logger().error("Failed to return to kitchen. Going home.")
+                else:
+                    self.publish_status("Delivery completed. Returned to kitchen.")
             
+            self.cancellation_in_progress = False 
             home_result = self.navigate_to('home')
             if "SUCCEEDED" in str(home_result).upper():
                 if delivered_tables:
@@ -285,8 +337,14 @@ class ButlerRobot(Node):
                 self.get_logger().error("Failed to return home.")
                 self.publish_status("Failed to return to home position.")
         
+        except Exception as e:
+            self.get_logger().error(f"Error in delivery process: {str(e)}")
+            self.navigate_to('home')
+            self.publish_status(f"Error occurred: {str(e)}. Returned to home.")
+        
         finally:
             self.delivery_in_progress = False
+            self.cancellation_in_progress = False  
 
 def main():
     rclpy.init()

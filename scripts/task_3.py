@@ -42,6 +42,15 @@ class ButlerRobotTask3(Node):
             'order',
             self.order_callback,
             10)
+        
+        # Subscribe to confirmation topic
+        self.confirmation_subscription = self.create_subscription(
+            String,
+            'confirmation',
+            self.confirmation_callback,
+            10)
+            
+
             
         # Initialize variables
         self.goals = []
@@ -87,6 +96,12 @@ class ButlerRobotTask3(Node):
         self.delivery_thread = threading.Thread(target=self.execute_delivery)
         self.delivery_thread.daemon = True
         self.delivery_thread.start()
+
+    def confirmation_callback(self, msg):
+        if self.waiting_for_confirmation:
+            self.get_logger().info(f"Confirmation received: {msg.data}")
+            self.confirmation_received = True
+            self.publish_status(f"Confirmation received at {self.current_location}")
 
     def publish_status(self, message):
         msg = String()

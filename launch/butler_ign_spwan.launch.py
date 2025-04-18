@@ -56,7 +56,7 @@ def generate_launch_description():
         executable="create",
         arguments=[
             "-topic", "/robot_description",
-            "-name", "apmr",
+            "-name", "butler_bot",
             "-allow_renaming", "true",
             "-z", "0.2",
             "-x", position_x,
